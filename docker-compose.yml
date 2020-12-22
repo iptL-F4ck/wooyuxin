@@ -1,0 +1,43 @@
+version: '3'
+services:
+  web:
+    build: .
+    container_name: wooyuxin-web
+    restart: always
+    entrypoint: ["sh", "/docker-entrypoint.sh"]
+    volumes:
+      - ./web/docker-entrypoint.sh:/docker-entrypoint.sh
+      - ./static:/app/static
+    ports:
+      - 37527:5000
+    depends_on:
+      - mongodb
+      - elasticsearch
+
+  mongodb:
+    image: mongo:latest
+    container_name: wooyuxin-mongo
+    restart: always
+    entrypoint: "/docker-entrypoint.sh"
+    volumes:
+      - ./mongo/docker-entrypoint.sh:/docker-entrypoint.sh
+      - ./mongo/initdb/:/docker-entrypoint-initdb.d/
+      - ./json:/json
+      #- ./data/mongo/log:/var/log/mongodb
+      #- ./data/mongo/db:/data/db
+    command: --replSet rs0
+    environment:
+      - MONGO_INITDB_DATABASE=wooyun
+    ports:
+      - "127.0.0.1:27017:27017"
+
+  elasticsearch:
+    image: elasticsearch:5.6.12
+    container_name: wooyuxin-elasticsearch
+    restart: always
+    volumes:
+    - ./elasticsearch/plugins:/usr/share/elasticsearch/plugins
+    #- ./data/elasticsearch/data:/usr/share/elasticsearch/data
+    #- ./data/elasticsearch/log:/usr/share/elasticsearch/log
+    ports:
+    - "127.0.0.1:9200:9200"
